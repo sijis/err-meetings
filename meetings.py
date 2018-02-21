@@ -1,4 +1,5 @@
 """Meeting errbot plugin."""
+import datetime
 import pprint
 
 import reunion
@@ -24,6 +25,12 @@ class Meeting(BotPlugin):
 
         if '#startmeeting' in message and self.meeting._started:
             self.send(username, 'A meeting is starting in {}.'.format(channel))
+
+        if '#endmeeting' in message and not self.meeting._started:
+            timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M')
+            channel = '{}'.format(channel)
+            self[channel] = {timestamp: self.meeting.results['discussion']}
+            self.send(username, 'Meeting results are stored in {}_{}.'.format(channel, timestamp))
 
         if not message:
             return
