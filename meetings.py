@@ -38,4 +38,11 @@ class Meeting(BotPlugin):
     @botcmd
     def meeting_results(self, msg, args):
         """Meeting results."""
-        return pprint.pformat(self.meeting.results)
+        channel, date, hour = args.split('_')
+        timestamp = '{}_{}'.format(date, hour)
+        raw_meeting = self[channel][timestamp]
+
+        meeting = reunion.Meeting()
+        for entry in raw_meeting:
+            meeting.parse(entry)
+        return pprint.pformat(meeting.results)
