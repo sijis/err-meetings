@@ -1,0 +1,9 @@
+[Core]
+Name = Meetings
+Module = meetings
+
+[Python]
+Version=3
+
+[Documentation]
+Description = A plugin to capture meetings.
