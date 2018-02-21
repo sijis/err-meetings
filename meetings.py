@@ -17,10 +17,14 @@ class Meeting(BotPlugin):
         """Message callback."""
         message = msg.body
         username = msg.frm
+        channel = msg.frm.room if msg.is_group else msg.frm
         meeting_message = '{username}: {message}'.format(username=username, message=message)
+
         self.meeting.parse(meeting_message)
-        if '#startmeeting' in message:
-            self.send(username, 'A meeting is starting.')
+
+        if '#startmeeting' in message and self.meeting._started:
+            self.send(username, 'A meeting is starting in {}.'.format(channel))
+
         if not message:
             return
 
