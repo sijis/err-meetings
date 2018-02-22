@@ -35,7 +35,7 @@ class Meeting(BotPlugin):
         if not message:
             return
 
-    @botcmd
+    @botcmd(template='results')
     def meeting_results(self, msg, args):
         """Meeting results."""
         channel, date, hour = args.split('_')
@@ -45,4 +45,8 @@ class Meeting(BotPlugin):
         meeting = reunion.Meeting()
         for entry in raw_meeting:
             meeting.parse(entry)
-        return pprint.pformat(meeting.results)
+
+        data = {
+            'meeting': meeting.results,
+        }
+        return data
