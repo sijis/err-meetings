@@ -50,3 +50,10 @@ class Meeting(BotPlugin):
             'meeting': meeting.results,
         }
         return data
+
+    @botcmd
+    def meeting_list(self, msg, args):
+        """List all meetings."""
+        for channel in self:
+            for date in self[channel]:
+                yield '{channel}_{date}'.format(channel=channel, date=date)
