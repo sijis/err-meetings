@@ -21,6 +21,9 @@ class Meeting(BotPlugin):
         channel = msg.frm.room if msg.is_group else msg.frm
         meeting_message = '{username}: {message}'.format(username=username, message=message)
 
+        if not message:
+            return
+
         self.meeting.parse(meeting_message)
 
         if '#startmeeting' in message and self.meeting._started:
@@ -32,8 +35,6 @@ class Meeting(BotPlugin):
             self[channel] = {timestamp: self.meeting.results['discussion']}
             self.send(username, 'Meeting results are stored in {}_{}.'.format(channel, timestamp))
 
-        if not message:
-            return
 
     @botcmd(template='results')
     def meeting_results(self, msg, args):
