@@ -28,13 +28,29 @@ class Meeting(BotPlugin):
 
         if '#startmeeting' in message and self.meeting._started:
             self.send(username, 'A meeting is starting in {}.'.format(channel))
+            self._create_meeting(channel)
 
         if '#endmeeting' in message and not self.meeting._started:
             timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M')
             channel = '{}'.format(channel)
             self[channel] = {timestamp: self.meeting.results['discussion']}
             self.send(username, 'Meeting results are stored in {}_{}.'.format(channel, timestamp))
+            self._destroy_meeting(channel)
 
+    def _create_meeting(self, channel):
+        """Create meeting storage if necessary."""
+        if 'active' not in self:
+            self['active'] = set()
+
+        actives = self['active']
+        actives.add('{}'.format(channel))
+        self['active'] = actives
+
+    def _destroy_meeting(self, channel):
+        """Destroy meeting from active list."""
+        actives = self['active']
+        actives.discard('{}'.format(channel))
+        self['active'] = actives
 
     @botcmd(template='results')
     def meeting_results(self, msg, args):
@@ -58,3 +74,10 @@ class Meeting(BotPlugin):
         for channel in self:
             for date in self[channel]:
                 yield '{channel}_{date}'.format(channel=channel, date=date)
+
+    @botcmd
+    def meeting_progress(self, msg, args):
+        """List of active meetings."""
+        actives = [str(a) for a in self['active']]
+        active_meetings = ', '.join(actives)
+        yield active_meetings
