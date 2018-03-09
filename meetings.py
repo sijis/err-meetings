@@ -76,7 +76,7 @@ class Meeting(BotPlugin):
         return data
 
     @botcmd
-    def meeting_list(self, msg, args):
+    def meeting_history(self, msg, args):
         """List all meetings."""
         for channel in self:
             for date in self[channel]:
