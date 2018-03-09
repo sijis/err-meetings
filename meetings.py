@@ -83,7 +83,7 @@ class Meeting(BotPlugin):
                 yield '{channel}_{date}'.format(channel=channel, date=date)
 
     @botcmd
-    def meeting_progress(self, msg, args):
+    def meeting_active(self, msg, args):
         """List of active meetings."""
         actives = [str(a) for a in self['active']]
         active_meetings = ', '.join(actives)
