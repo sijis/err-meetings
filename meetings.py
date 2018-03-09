@@ -85,6 +85,9 @@ class Meeting(BotPlugin):
     @botcmd
     def meeting_active(self, msg, args):
         """List of active meetings."""
-        actives = [str(a) for a in self['active']]
-        active_meetings = ', '.join(actives)
+        actives = [str(a) for a in self.get('active', [])]
+        if actives:
+            active_meetings = ', '.join(actives)
+        else:
+            active_meetings = 'There are no active meetings.'
         yield active_meetings
