@@ -11,7 +11,7 @@ class Meeting(BotPlugin):
 
     def __init__(self, *args, **kwargs):
         """Init."""
-        self.meeting = reunion.Meeting()
+        self.raw_meetings = {}
         super().__init__(*args, **kwargs)
 
     def callback_message(self, msg):
@@ -24,18 +24,20 @@ class Meeting(BotPlugin):
         if not message:
             return
 
-        self.meeting.parse(meeting_message)
+        channel_str = '{}'.format(channel)
 
-        if '#startmeeting' in message and self.meeting._started:
+        if '#startmeeting' in message:
             self.send(username, 'A meeting is starting in {}.'.format(channel))
-            self._create_meeting(channel)
+            self._create_meeting(channel_str)
 
-        if '#endmeeting' in message and not self.meeting._started:
+        if channel_str in self['active']:
+            self.raw_meetings[channel_str].append(meeting_message)
+
+        if '#endmeeting' in message:
             timestamp = datetime.datetime.now().strftime('%Y%m%d_%H%M')
-            channel = '{}'.format(channel)
-            self[channel] = {timestamp: self.meeting.results['discussion']}
-            self.send(username, 'Meeting results are stored in {}_{}.'.format(channel, timestamp))
-            self._destroy_meeting(channel)
+            self[channel_str] = {timestamp: self.raw_meetings[channel_str]}
+            self.send(username, 'Meeting results are stored in {}_{}.'.format(channel_str, timestamp))
+            self._destroy_meeting(channel_str)
 
     def _create_meeting(self, channel):
         """Create meeting storage if necessary."""
@@ -43,14 +45,19 @@ class Meeting(BotPlugin):
             self['active'] = set()
 
         actives = self['active']
-        actives.add('{}'.format(channel))
+        actives.add(channel)
         self['active'] = actives
+
+        if channel not in self.raw_meetings:
+            self.raw_meetings[channel] = []
 
     def _destroy_meeting(self, channel):
         """Destroy meeting from active list."""
         actives = self['active']
-        actives.discard('{}'.format(channel))
+        actives.discard(channel)
         self['active'] = actives
+        del self.raw_meetings[channel]
+
 
     @botcmd(template='results')
     def meeting_results(self, msg, args):
