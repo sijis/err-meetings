@@ -1,27 +1,28 @@
+
 # Topics
 {% for topic, topicdata in meeting.topics.items() %}
-* {{topic-}}
+## {{topic}}
   {% for info in topicdata.info %}
-  * {{info}}
-  {% endfor -%}
-{% endfor %}
+        * {{info-}}
+  {% endfor %}
+{% endfor -%}
 
 # Actions
 {% for user, userdata in meeting.users.items() %}
-* {{user-}}
+## {{user}}
   {% for action in userdata.actions %}
-  * {{action}}
-  {% endfor -%}
+        * {{action}}
+  {% endfor %}
 {% endfor %}
 
 # Lines said
 {% for user, userdata in meeting.users.items() %}
-* {{user}} - {{userdata.message_count}}
+* {{user}} - {{userdata.message_count-}}
 {%endfor%}
 
 # Whole meeting
 ```
 {% for line in meeting.discussion %}
-{{line-}}
+    {{line-}}
 {%endfor%}
 ```
