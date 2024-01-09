@@ -19,17 +19,15 @@ class Meeting(BotPlugin):
         message = msg.body
         username = msg.frm
         channel = msg.frm.room if msg.is_group else msg.frm
-        meeting_message = "{username}: {message}".format(
-            username=username, message=message
-        )
+        meeting_message = f"{username}: {message}"
 
         if not message:
             return
 
-        channel_str = "{}".format(channel)
+        channel_str = f"{channel}"
 
         if "#startmeeting" in message:
-            self.send(username, "A meeting is starting in {}.".format(channel))
+            self.send(username, f"A meeting is starting in {channel}.")
             self._create_meeting(channel_str)
 
         if channel_str in self["active"]:
@@ -40,7 +38,7 @@ class Meeting(BotPlugin):
             self[channel_str] = {timestamp: self.raw_meetings[channel_str]}
             self.send(
                 username,
-                "Meeting results are stored in {}_{}.".format(channel_str, timestamp),
+                f"Meeting results are stored in {channel}_{timestamp}.",
             )
             self._destroy_meeting(channel_str)
 
@@ -84,7 +82,7 @@ class Meeting(BotPlugin):
         """List all meetings."""
         for channel in self:
             for date in self[channel]:
-                yield "{channel}_{date}".format(channel=channel, date=date)
+                yield f"{channel}_{date}"
 
     @botcmd
     def meeting_active(self, msg, args):
