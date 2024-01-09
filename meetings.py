@@ -62,11 +62,16 @@ class Meeting(BotPlugin):
         del self.raw_meetings[channel]
 
     @botcmd(template="results")
-    def meeting_results(self, msg, args):
-        """Meeting results."""
-        channel, date, hour = args.split("_")
-        timestamp = "{}_{}".format(date, hour)
-        raw_meeting = self[channel][timestamp]
+    def meeting_summary(self, msg, args):
+        """Meeting summary."""
+        if args.startswith("active"):
+            return "Sorry, cannot summarize active meetings"
+
+        channel, _, timestamp = args.partition("_")
+        try:
+            raw_meeting = self[channel][timestamp]
+        except KeyError:
+            return "Meeting not found."
 
         meeting = reunion.Meeting()
         for entry in raw_meeting:
