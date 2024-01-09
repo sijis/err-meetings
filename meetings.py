@@ -18,29 +18,34 @@ class Meeting(BotPlugin):
         """Message callback."""
         message = msg.body
         username = msg.frm
-        channel = msg.frm.room if msg.is_group else msg.frm
+        channel_raw = msg.frm.room if msg.is_group else msg.frm
         meeting_message = f"{username}: {message}"
 
         if not message:
             return
 
-        channel_str = f"{channel}"
+        channel = str(channel_raw)
 
         if "#startmeeting" in message:
             self.send(username, f"A meeting is starting in {channel}.")
-            self._create_meeting(channel_str)
+            self._create_meeting(channel)
 
-        if channel_str in self["active"]:
-            self.raw_meetings[channel_str].append(meeting_message)
+        if channel in self["active"]:
+            self.raw_meetings[channel].append(meeting_message)
 
         if "#endmeeting" in message:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-            self[channel_str] = {timestamp: self.raw_meetings[channel_str]}
+            if channel not in self:
+                self[channel] = {}
+
+            all_channel_meetings = self[channel]
+            all_channel_meetings.update({timestamp: self.raw_meetings[channel]})
+            self[channel] = all_channel_meetings
             self.send(
                 username,
                 f"Meeting results are stored in {channel}_{timestamp}.",
             )
-            self._destroy_meeting(channel_str)
+            self._destroy_meeting(channel)
 
     def _create_meeting(self, channel):
         """Create meeting storage if necessary."""
