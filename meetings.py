@@ -14,6 +14,13 @@ class Meeting(BotPlugin):
         self.raw_meetings = {}
         super().__init__(*args, **kwargs)
 
+    def _format_channel(self, name):
+        name = str(name)
+        chars = ["!", "@", "#", "$", "^", "*"]
+        for char in chars:
+            name = name.replace(char, "")
+        return name
+
     def callback_message(self, msg):
         """Message callback."""
         message = msg.body
