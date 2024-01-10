@@ -11,7 +11,6 @@ class Meeting(BotPlugin):
 
     def __init__(self, *args, **kwargs):
         """Init."""
-        self.raw_meetings = {}
         super().__init__(*args, **kwargs)
 
     def _format_channel(self, name):
@@ -41,7 +40,7 @@ class Meeting(BotPlugin):
                 self._create_meeting(channel)
 
         if channel in self.get("active_meetings", ()):
-            self.raw_meetings[channel].append(meeting_message)
+            self._add_message_to_history(channel, meeting_message)
 
         if "#endmeeting" in message:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
@@ -49,7 +48,7 @@ class Meeting(BotPlugin):
                 self[channel] = {}
 
             all_channel_meetings = self[channel]
-            all_channel_meetings.update({timestamp: self.raw_meetings[channel]})
+            all_channel_meetings.update({timestamp: self["raw_meetings"][channel]})
             self[channel] = all_channel_meetings
             self.send(
                 username,
@@ -66,16 +65,28 @@ class Meeting(BotPlugin):
         actives = self["active_meetings"]
         actives.add(channel)
         self["active_meetings"] = actives
+        self._create_raw_meeting(channel)
 
-        if channel not in self.raw_meetings:
-            self.raw_meetings[channel] = []
+    def _create_raw_meeting(self, channel):
+        if channel not in self.get("raw_meetings", []):
+            self["raw_meetings"] = {channel: []}
+
+    def _add_message_to_history(self, channel, msg):
+        self._create_raw_meeting(channel)
+        if msg:
+            all_history = self["raw_meetings"]
+            all_history[channel].append(msg)
+            self["raw_meetings"] = all_history
 
     def _destroy_active_meeting(self, channel):
         """Destroy meeting from active list."""
         actives = self["active_meetings"]
         actives.discard(channel)
         self["active_meetings"] = actives
-        del self.raw_meetings[channel]
+
+        raw_meetings = self["raw_meetings"]
+        raw_meetings.pop(channel)
+        self["raw_meetings"] = raw_meetings
 
     @botcmd(template="results")
     def meeting_summary(self, msg, args):
