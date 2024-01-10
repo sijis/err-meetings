@@ -55,7 +55,7 @@ class Meeting(BotPlugin):
                 username,
                 f"Meeting results are stored in {channel}_{timestamp}.",
             )
-            self._destroy_meeting(channel)
+            self._destroy_active_meeting(channel)
 
     def _create_meeting(self, channel):
         """Create meeting storage if necessary."""
@@ -70,7 +70,7 @@ class Meeting(BotPlugin):
         if channel not in self.raw_meetings:
             self.raw_meetings[channel] = []
 
-    def _destroy_meeting(self, channel):
+    def _destroy_active_meeting(self, channel):
         """Destroy meeting from active list."""
         actives = self["active_meetings"]
         actives.discard(channel)
