@@ -47,14 +47,21 @@ class Meeting(BotPlugin):
             if channel not in self:
                 self[channel] = {}
 
-            all_channel_meetings = self[channel]
-            all_channel_meetings.update({timestamp: self["raw_meetings"][channel]})
-            self[channel] = all_channel_meetings
-            self.send(
-                username,
-                f"Meeting results are stored in {channel}_{timestamp}.",
-            )
-            self._destroy_active_meeting(channel)
+            if channel in self.get("active_meetings", ()):
+                all_channel_meetings = self[channel]
+                all_channel_meetings.update({timestamp: self["raw_meetings"][channel]})
+                self[channel] = all_channel_meetings
+                self.send(
+                    username,
+                    f"Meeting results are stored in {channel}_{timestamp}.",
+                )
+                self._destroy_active_meeting(channel)
+            else:
+                self.send(
+                    username,
+                    f"Sorry, no active meeting found for {channel}.",
+                )
+
 
     def _create_meeting(self, channel):
         """Create meeting storage if necessary."""
