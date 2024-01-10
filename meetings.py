@@ -31,13 +31,16 @@ class Meeting(BotPlugin):
         if not message:
             return
 
-        channel = str(channel_raw)
+        channel = self._format_channel(channel_raw)
 
         if "#startmeeting" in message:
-            self.send(username, f"A meeting is starting in {channel}.")
-            self._create_meeting(channel)
+            if channel in self.get("active_meetings", ()):
+                self.send(username, f"A meeting is currently in progress for {channel}.")
+            else:
+                self.send(username, f"A meeting is starting in {channel}.")
+                self._create_meeting(channel)
 
-        if channel in self["active"]:
+        if channel in self.get("active_meetings", ()):
             self.raw_meetings[channel].append(meeting_message)
 
         if "#endmeeting" in message:
@@ -56,21 +59,22 @@ class Meeting(BotPlugin):
 
     def _create_meeting(self, channel):
         """Create meeting storage if necessary."""
-        if "active" not in self:
-            self["active"] = set()
+        if "active_meetings" not in self:
+            self["active_meetings"] = set()
+        channel = self._format_channel(channel)
 
-        actives = self["active"]
+        actives = self["active_meetings"]
         actives.add(channel)
-        self["active"] = actives
+        self["active_meetings"] = actives
 
         if channel not in self.raw_meetings:
             self.raw_meetings[channel] = []
 
     def _destroy_meeting(self, channel):
         """Destroy meeting from active list."""
-        actives = self["active"]
+        actives = self["active_meetings"]
         actives.discard(channel)
-        self["active"] = actives
+        self["active_meetings"] = actives
         del self.raw_meetings[channel]
 
     @botcmd(template="results")
@@ -104,7 +108,7 @@ class Meeting(BotPlugin):
     @botcmd
     def meeting_active(self, msg, args):
         """List of active meetings."""
-        actives = [str(a) for a in self.get("active", [])]
+        actives = self.get("active_meetings", ())
         if actives:
             active_meetings = ", ".join(actives)
         else:
