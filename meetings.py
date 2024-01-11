@@ -46,13 +46,17 @@ class Meeting(BotPlugin):
 
         if "#endmeeting" in message:
             timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-            if channel not in self:
-                self[channel] = {}
+            if channel not in self.get("archived_meetings", {}):
+                archive_meetings = self.get("archived_meetings", {})
+                archive_meetings.update({channel: {}})
+                self["archived_meetings"] = archive_meetings
 
             if channel in self.get("active_meetings", ()):
-                all_channel_meetings = self[channel]
-                all_channel_meetings.update({timestamp: self["raw_meetings"][channel]})
-                self[channel] = all_channel_meetings
+                all_archived_meetings = self["archived_meetings"]
+                all_archived_meetings[channel].update(
+                    {timestamp: self["raw_meetings"][channel]}
+                )
+                self["archived_meetings"] = all_archived_meetings
                 self.send(
                     username,
                     f"Meeting results are stored in {channel}_{timestamp}.",
@@ -106,7 +110,7 @@ class Meeting(BotPlugin):
 
         channel, _, timestamp = args.partition("_")
         try:
-            raw_meeting = self[channel][timestamp]
+            raw_meeting = self["archived_meetings"][channel][timestamp]
         except KeyError:
             return "Meeting not found."
 
@@ -122,9 +126,12 @@ class Meeting(BotPlugin):
     @botcmd
     def meeting_history(self, msg, args):
         """List all meetings."""
-        for channel in self:
-            for date in self[channel]:
+        for channel in self.get("archived_meetings", []):
+            for date in self["archived_meetings"][channel]:
                 yield f"{channel}_{date}"
+
+        if not self.get("archived_meetings", []):
+            yield "No historical meetings available."
 
     @botcmd
     def meeting_active(self, msg, args):
