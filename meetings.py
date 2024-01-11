@@ -34,7 +34,9 @@ class Meeting(BotPlugin):
 
         if "#startmeeting" in message:
             if channel in self.get("active_meetings", ()):
-                self.send(username, f"A meeting is currently in progress for {channel}.")
+                self.send(
+                    username, f"A meeting is currently in progress for {channel}."
+                )
             else:
                 self.send(username, f"A meeting is starting in {channel}.")
                 self._create_meeting(channel)
@@ -61,7 +63,6 @@ class Meeting(BotPlugin):
                     username,
                     f"Sorry, no active meeting found for {channel}.",
                 )
-
 
     def _create_meeting(self, channel):
         """Create meeting storage if necessary."""
