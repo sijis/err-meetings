@@ -77,7 +77,9 @@ class Meeting(BotPlugin):
 
     def _create_raw_meeting(self, channel):
         if channel not in self.get("raw_meetings", []):
-            self["raw_meetings"] = {channel: []}
+            raw_meetings = self.get("raw_meetings", {})
+            raw_meetings.update({channel: []})
+            self["raw_meetings"] = raw_meetings
 
     def _add_message_to_history(self, channel, msg):
         self._create_raw_meeting(channel)
