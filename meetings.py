@@ -92,6 +92,12 @@ class Meeting(BotPlugin):
             all_history[channel].append(msg)
             self["raw_meetings"] = all_history
 
+    def _destroy_history_meeting(self, meeting):
+        channel, _, date = meeting.partition("_")
+        all_meetings = self["archived_meetings"][channel]
+        all_meetings.pop(date)
+        self["archived_meetings"][channel] = all_meetings
+
     def _destroy_active_meeting(self, channel):
         """Destroy meeting from active list."""
         actives = self["active_meetings"]
@@ -142,3 +148,14 @@ class Meeting(BotPlugin):
         else:
             active_meetings = "There are no active meetings."
         yield active_meetings
+
+    @botcmd
+    def meeting_delete(self, msg, args):
+        """List of active meetings."""
+        if args.startswith("active"):
+            active, _, channel = args.partition("_")
+            self._destroy_active_meeting(channel)
+            return f"Deleted active meeting: {args}"
+
+        self._destroy_history_meeting(args)
+        return f"Deleted meeting: {args}"
